@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stan Magazynu</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+        .blink {
+            animation: blink 1s linear infinite;
+        }
+        .center-text {
+            text-align: center;
+        }
+        .uppercase {
+            text-transform: uppercase;
+        }
+        .category-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('index') }}">Aplikacja Magazynowa</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('add_product') }}">Dodaj nowy produkt</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('update_product') }}">Zaktualizuj produkt</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('activity_log') }}">Archiwum działań</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('inventory') }}">Stan Magazynu</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h1>Stan Magazynu</h1>
+        <table class="table">
+            <thead class="thead-dark">
+                <tr class="center-text uppercase">
+                    <th scope="col">Kod kreskowy</th>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">Ilość</th>
+                    <th scope="col">Minimalna ilość</th>
+                    <th scope="col">Data dodania</th>
+                    <th scope="col">Data aktualizacji</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Dodane przez</th>
+                    <th scope="col">Zaktualizowane przez</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set current_category = None %}
+                {% for product in products %}
+                    {% if current_category != product.category %}
+                        {% if current_category is not none %}
+                            </tbody>
+                        {% endif %}
+                        <tr class="category-header">
+                            <td colspan="9" class="center-text uppercase">{{ product.category }}</td>
+                        </tr>
+                        <tbody>
+                        {% set current_category = product.category %}
+                    {% endif %}
+                    <tr class="center-text">
+                        <td>{{ product.barcode }}</td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.quantity }}</td>
+                        <td>{{ product.min_quantity }}</td>
+                        <td>{{ product.date_added.strftime('%Y-%m-%d %H:%M:%S') if product.date_added else '' }}</td>
+                        <td>{{ product.date_updated.strftime('%Y-%m-%d %H:%M:%S') if product.date_updated else '' }}</td>
+                        <td>
+                            {% if product.quantity <= product.min_quantity %}
+                                <span class="text-danger blink">Należy złożyć zamówienie</span>
+                            {% else %}
+                                <span class="text-success">Stan magazynu OK</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.added_by }}</td>
+                        <td>{{ product.updated_by if product.updated_by else 'N/A' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+        </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
